@@ -19,7 +19,7 @@ import (
 	"time"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/boltdb/bolt"
+	bolt "go.etcd.io/bbolt"
 )
 
 const version = "v0.0.0"
