@@ -3,7 +3,7 @@ package boltbrowserweb
 import (
 	"bytes"
 	"fmt"
-	"github.com/boltdb/bolt"
+	bolt "go.etcd.io/bbolt"
 	"github.com/gin-gonic/gin"
 )
 

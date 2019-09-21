@@ -19,7 +19,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	log "github.com/sirupsen/logrus"
-	"github.com/boltdb/bolt"
+	bolt "go.etcd.io/bbolt"
 )
 
 const version = "v0.0.0"
@@ -47,7 +47,11 @@ func init() {
 	// Read the static path from the environment if set.
 	dbName = os.Getenv("BOLTDBWEB_DB_NAME")
 	port = os.Getenv("BOLTDBWEB_PORT")
+	staticPath = os.Getenv("BOLTDBWEB_STATIC_PATH")
 	// Use default values if environment not set.
+	if staticPath == "" {
+		staticPath = "."
+	}
 	if port == "" {
 		port = "8080"
 	}
@@ -58,6 +62,8 @@ func init() {
 	flag.StringVar(&dbName, "db-name", dbName, "Name of the database")
 	flag.StringVar(&port, "p", port, "Port for the web-ui")
 	flag.StringVar(&port, "port", port, "Port for the web-ui")
+	flag.StringVar(&staticPath, "s", staticPath, "Path for the static content")
+	flag.StringVar(&staticPath, "static-path", staticPath, "Path for the static content")
 }
 
 func main() {
@@ -111,7 +117,7 @@ func main() {
 	r.POST("/deleteBucket", boltbrowserweb.DeleteBucket)
 	r.POST("/prefixScan", boltbrowserweb.PrefixScan)
 
-	r.StaticFS("/web", assetFS())
+	r.Static("/web", staticPath+"/web")
 
 	r.Run(":" + port)
 }
