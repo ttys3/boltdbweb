@@ -1,21 +1,21 @@
-//
 // boltdbweb is a webserver base GUI for interacting with BoltDB databases.
 //
 // For authorship see https://github.com/evnix/boltdbweb
 // MIT license is included in repository
-//
 package main
 
-//go:generate go-bindata-assetfs -o web_static.go web/...
-
 import (
+	"embed"
 	"flag"
 	"fmt"
+	boltbrowserweb "github.com/evnix/boltdbweb/web"
+	"net/http"
 	"os"
 	"path"
 	"time"
+)
 
-	"github.com/evnix/boltdbweb/web"
+import (
 	"github.com/gin-gonic/gin"
 
 	log "github.com/sirupsen/logrus"
@@ -23,6 +23,9 @@ import (
 )
 
 const version = "v1.0.0"
+
+//go:embed web
+var webAssets embed.FS
 
 var (
 	showHelp   bool
@@ -48,22 +51,16 @@ func init() {
 	dbName = os.Getenv("BOLTDBWEB_DB_NAME")
 	port = os.Getenv("BOLTDBWEB_PORT")
 	staticPath = os.Getenv("BOLTDBWEB_STATIC_PATH")
-	// Use default values if environment not set.
-	if staticPath == "" {
-		staticPath = "."
-	}
 	if port == "" {
 		port = "8080"
 	}
 	// Setup for command line processing
 	flag.BoolVar(&showHelp, "h", false, "display help")
 	flag.BoolVar(&showHelp, "help", false, "display help")
-	flag.StringVar(&dbName, "d", dbName, "Name of the database")
-	flag.StringVar(&dbName, "db-name", dbName, "Name of the database")
+	flag.StringVar(&dbName, "d", dbName, "Path of the database")
 	flag.StringVar(&port, "p", port, "Port for the web-ui")
 	flag.StringVar(&port, "port", port, "Port for the web-ui")
 	flag.StringVar(&staticPath, "s", staticPath, "Path for the static content")
-	flag.StringVar(&staticPath, "static-path", staticPath, "Path for the static content")
 }
 
 func main() {
@@ -83,7 +80,7 @@ func main() {
 
 	if dbName == "" {
 		usage(appName, version)
-		log.Printf("\nERROR: Missing boltdb name\n")
+		log.Error("ERROR: Missing boltdb name")
 		os.Exit(1)
 	}
 
@@ -117,7 +114,13 @@ func main() {
 	r.POST("/deleteBucket", boltbrowserweb.DeleteBucket)
 	r.POST("/prefixScan", boltbrowserweb.PrefixScan)
 
-	r.Static("/web", staticPath+"/web")
+	if staticPath != "" {
+		log.Infof("using static path: %s", staticPath)
+		r.Static("/static", staticPath)
+	} else {
+		log.Infof("using embedded static content")
+		r.StaticFS("/static", http.FS(webAssets))
+	}
 
 	r.Run(":" + port)
 }
