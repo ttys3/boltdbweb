@@ -1,17 +1,18 @@
-package boltbrowserweb
+package api
 
 import (
 	"bytes"
 	"fmt"
-	bolt "go.etcd.io/bbolt"
+
 	"github.com/gin-gonic/gin"
+	bolt "go.etcd.io/bbolt"
 )
 
 var Db *bolt.DB
 
 func Index(c *gin.Context) {
 
-	c.Redirect(301, "/web/html/layout.html")
+	c.Redirect(301, "/static/web/html/layout.html")
 
 }
 

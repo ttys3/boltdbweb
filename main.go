@@ -8,17 +8,16 @@ import (
 	"embed"
 	"flag"
 	"fmt"
-	boltbrowserweb "github.com/evnix/boltdbweb/web"
 	"net/http"
 	"os"
 	"path"
 	"time"
-)
 
-import (
+	"github.com/evnix/boltdbweb/api"
 	"github.com/gin-gonic/gin"
 
 	log "github.com/sirupsen/logrus"
+
 	bolt "go.etcd.io/bbolt"
 )
 
@@ -89,7 +88,7 @@ func main() {
 
 	var err error
 	db, err = bolt.Open(dbName, 0600, &bolt.Options{Timeout: 2 * time.Second})
-	boltbrowserweb.Db = db
+	api.Db = db
 
 	if err != nil {
 		fmt.Println(err)
@@ -104,15 +103,15 @@ func main() {
 		})
 	})
 
-	r.GET("/", boltbrowserweb.Index)
+	r.GET("/", api.Index)
 
-	r.GET("/buckets", boltbrowserweb.Buckets)
-	r.POST("/createBucket", boltbrowserweb.CreateBucket)
-	r.POST("/put", boltbrowserweb.Put)
-	r.POST("/get", boltbrowserweb.Get)
-	r.POST("/deleteKey", boltbrowserweb.DeleteKey)
-	r.POST("/deleteBucket", boltbrowserweb.DeleteBucket)
-	r.POST("/prefixScan", boltbrowserweb.PrefixScan)
+	r.GET("/buckets", api.Buckets)
+	r.POST("/createBucket", api.CreateBucket)
+	r.POST("/put", api.Put)
+	r.POST("/get", api.Get)
+	r.POST("/deleteKey", api.DeleteKey)
+	r.POST("/deleteBucket", api.DeleteBucket)
+	r.POST("/prefixScan", api.PrefixScan)
 
 	if staticPath != "" {
 		log.Infof("using static path: %s", staticPath)
